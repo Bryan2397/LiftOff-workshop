@@ -44,26 +44,39 @@ export const addFlight = async (req, res)=>{
 
 export async function updateFlight(req, res){
     try {
-        
-        const updates = Object.fromEntries(
-            Object.entries(req.body).filter(
-            ([_, value]) => value != null && value !== ""));
-        if(!updates){
-            return res.status(404).json({ message: "Nothing was updated" });
-        }
-        const updatedFlight = await Flight.findByIdAndUpdate(req.params.id, updates, { new: true });
-        console.log(updatedFlight);
+        //recursive function that allows us to 
+        //keep going furthur into a nested object
+        //until we reach a value that isn't another 
+        // nested object which indicates we're ready to return
+        const flattenObject = (obj, prefix = "") => 
+            Object.keys(obj).reduce((acc, key) => {
+                const value = obj[key];
+                const prefixedKey = prefix ? `${prefix}.${key}` : key
+                if(value && typeof value === "object" && !Array.isArray(value)){
+                    Object.assign(acc, flattenObject(value, prefixedKey));
+                }else if(value != null && value !== ""){
+                    acc[prefixedKey] = value;
+                }
+                return acc;
+            }, {});
 
-        if(!updatedFlight){
-            return res.status(404).json({ message: "Error in finding flight" });
+        const updates = flattenObject(req.body);
+
+        if(Object.keys.length === 0){
+            return res.status(400).json({ message: "Nothing to update" });
         }
 
-        res.status(200).json({ message: "flight updated Successfully" });
+        const updatedFlight = await Flight.findByIdAndUpdate(req.params.id, updates, {new: true});
+
+        if(!updateFlight){
+            return res.status(404).json({ message: "Flight not found" });
+        }
+
+        res.status(200).json({ message: "flight updated Successfully", updatedFlight });
     } catch (error) {
         console.log("Flight not updated", error);
         res.status(500).json({ message: "Internal Server Error"});
     }
-}
 
 export async function deleteFlight(req, res){
  try {
