@@ -1,1 +1,1 @@
-# LiftOff-workshop
+My copy of the LiftOff application for my Software Engineering class where I am in charge of creating the entire backend and designing React components and testing API endpoints with Postman and from simple frontend pages I've created.
