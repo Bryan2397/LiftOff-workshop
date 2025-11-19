@@ -70,11 +70,7 @@ const flightsSchema = new mongoose.Schema({
   hasPowerOutlets: { type: Boolean, default: false },
   hasLiveTV: { type: Boolean, default: false },
 
-  onTimePercentage: { type: Number },
-  averageDelayMin: { type: Number },
-  cancellationRate: { type: Number },
-  weatherDelayRiskScore: { type: Number },
-  safetyScore: { type: Number },
+  
   rating: { type: Number },
 
   amenities: { type: amenitiesSchema },
