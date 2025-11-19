@@ -2,23 +2,24 @@ import Flight from "../models/Flights.js";
 import Seller from "../models/Sellers.js";
 
 export const addFlight = async (req, res)=>{
+
     try{
         
-        const { sellerId, flightNumber, price, arrivalTime, 
-            description, departureTime, seatsAvailable,
-            origin, destination, airline, seatsBooked,
-            } = req.body; 
+        const { 
+            sellerId, flightNumber, airline, seatsBooked,
+            description, amenities, stopInfo, status, departureTime,
+            arrivalTime, price, seatsAvailable, from, airportFrom,
+            addressFrom, terminalFrom, gateFrom, to, airportTo,
+            AddressTo, terminalTo, gateTo, rating, stops, carryOnBagsAllowed, carryOnWeightLimitKg,
+            personalItemAllowed, checkedBagsAllowed,checkedBagWeightLimitKg, extraBagFeeUSD,
+            aircraftModel, aircraftCode, aircraftAgeYears, aircraftCapacity,
+            seatLayout, seatPitch, seatWidth, hasUSBOutlets, hasPowerOutlets,
+            hasLiveTV } = req.body; 
             
-            console.log(req.body);
-
-            if(!await Seller.findById(sellerId)){
-                return res.status(404).json({ message: "Invalid input" });
-            }
-
-            if(!flightNumber || !price || !arrivalTime 
-                || !seatsAvailable || !price){
-                    return res.status(404).json({ message: "Invalid input" });
-                }
+            
+        if(!await Seller.findById(sellerId)){
+            return res.status(404).json({ message: "Invalid input" });
+        }   
         
         const newFlight = new Flight({
             sellerId: sellerId,
@@ -27,11 +28,46 @@ export const addFlight = async (req, res)=>{
             price: price,
             arrivalTime: arrivalTime,
             departureTime: departureTime,
-            origin: origin,
-            destination: destination,
+  
+            from: from,
+            to: to,
+
+            airportFrom: airportFrom,
+            addressFrom: addressFrom,
+            terminalFrom: terminalFrom,
+            gateFrom: gateFrom,
+  
+            airportTo: airportTo,
+            AddressTo: AddressTo,
+            terminalTo: terminalTo,
+            gateTo: gateTo,
+
             seatsBooked: seatsBooked,
             seatsAvailable: seatsAvailable,
             description: description,
+
+            amenities: amenities,
+            stopInfo: stopInfo,
+            status: status,
+            rating: rating,
+            stops: stops,
+            carryOnBagsAllowed: carryOnBagsAllowed,
+            carryOnWeightLimitKg: carryOnWeightLimitKg,
+            personalItemAllowed: personalItemAllowed,
+            checkedBagsAllowed: checkedBagsAllowed,
+            checkedBagWeightLimitKg: checkedBagWeightLimitKg,
+            extraBagFeeUSD: extraBagFeeUSD,
+
+            aircraftModel: aircraftModel,
+            aircraftCode: aircraftCode,
+            aircraftAgeYears: aircraftAgeYears,
+            aircraftCapacity: aircraftCapacity,
+            seatLayout: seatLayout,
+            seatPitch: seatPitch,
+            seatWidth: seatWidth,
+            hasUSBOutlets: hasUSBOutlets,
+            hasPowerOutlets: hasPowerOutlets,
+            hasLiveTV: hasLiveTV,
         });
 
         await newFlight.save();
