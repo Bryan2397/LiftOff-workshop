@@ -11,6 +11,8 @@ import Settings from "./pages/Settings";
 import AddFlight from "./pages/AddFlight";
 import AirlineSignup from "./pages/AirlineSignUp";
 import HomePage from "./pages/HomePage";
+import { Toaster } from "react-hot-toast";
+import FlightDetail from "./components/FlightDetail";
 
 
 function App() {
@@ -22,6 +24,7 @@ function App() {
       <Navbar />
       <Routes>
         <Route path="/" element={<HomePage />}/>
+        <Route path="/note/:id" element={<FlightDetail />} />
         <Route path="/airlineSignup" element={<AirlineSignup />} />
         <Route path="/Login" element={<Login />} />
         <Route path="/addflight" element={<AddFlight />} />
