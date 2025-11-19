@@ -7,81 +7,60 @@ const stopInfoSchema = new mongoose.Schema({
   durationMin: { type: Number, required: true }
 });
 
-const amenitiesSchema = new mongoose.Schema({
-  wifi: { type: Boolean, default: false },
-  meals: { type: Boolean, default: false },
-  entertainment: { type: Boolean, default: false },
-  chargingPorts: { type: Boolean, default: false }
-});
+const FlightSchema = new mongoose.Schema({
+    //add this after we have the seller UI set up
+    sellerId: {type: mongoose.Schema.Types.ObjectId, ref: "Seller", required: true},
+    
+    flightNumber: {type: String, required: true},
+    airline: { type: String, required: true },
+    seatsBooked: {type: Number, required: true},
+    description: {type: String, required: true},
+    amenities : {
+    wifi: { type: Boolean, default: false },
+    meals: { type: Boolean, default: false },
+    entertainment: { type: Boolean, default: false },
+    chargingPorts: { type: Boolean, default: false }
+    },
+    stopInfo: [stopInfoSchema],
+    status: { type: String, enum: ['scheduled', 'cancelled', 'completed'], default: 'scheduled' },
+    departureTime: {type: Date, required: true},
+    arrivalTime: {type: Date, required: true},
+    price: {type: Number, required: true},
+    seatsAvailable: {type: Number, required: true}, 
 
-const flightsSchema = new mongoose.Schema({
-  sellerId: { type: mongoose.Schema.Types.ObjectId, ref: "Seller", required: true },
-  
-  flightNumber: { type: String, required: true },
-  airline: { type: String, required: true },
-  description: { type: String, required: true },
-  seatsBooked: { type: Number, default: 0 },
-  seatsAvailable: { type: Number, required: true },
-  
-  origin: {
-    city: { type: String, required: true },
-    airportName: { type: String, required: true },
-    country: { type: String, required: true },
-    iataCode: { type: String, required: true },
-    terminal: { type: String },
-    gate: { type: String },
-    fullAddress: { type: String }
-  },
-  
-  destination: {
-    city: { type: String, required: true },
-    airportName: { type: String, required: true },
-    country: { type: String, required: true },
-    iataCode: { type: String, required: true },
-    terminal: { type: String },
-    gate: { type: String },
-    fullAddress: { type: String }
-  },
-  
-  departureTime: { type: Date, required: true },
-  arrivalTime: { type: Date, required: true },
-  departureTimeLocal: { type: String },
-  arrivalTimeLocal: { type: String },
-  durationMin: { type: Number },
-  timezoneChange: { type: String },
-  departureTimezone: { type: String },
-  arrivalTimezone: { type: String },
-  
-  carryOnBagsAllowed: { type: Number, default: 1 },
-  carryOnWeightLimitKg: { type: Number },
-  personalItemAllowed: { type: Boolean, default: true },
-  checkedBagsAllowed: { type: Number, default: 0 },
-  checkedBagWeightLimitKg: { type: Number },
-  extraBagFeeUSD: { type: Number },
+    from: {type: String, required: true},
+    airportFrom: {type: String, required: true},
+    addressFrom: {type: String, required: true},
+    terminalFrom: {type: String, required: true},
+    gateFrom: {type: String, required: true},
 
-  aircraftModel: { type: String },
-  aircraftCode: { type: String },
-  aircraftAgeYears: { type: Number },
-  aircraftCapacity: { type: Number },
-  seatLayout: { type: String },
-  seatPitch: { type: String },
-  seatWidth: { type: String },
-  hasUSBOutlets: { type: Boolean, default: false },
-  hasPowerOutlets: { type: Boolean, default: false },
-  hasLiveTV: { type: Boolean, default: false },
 
-  
-  rating: { type: Number },
+    to: {type: String, required: true},
+    airportTo: {type: String, required: true},
+    AddressTo: {type: String, required: true},
+    terminalTo: {type: String, required: true},
+    gateTo: {type: String, required: true},
+    rating: {type: String, required: true},
+    stops: {type: Number, required: true},
+    carryOnBagsAllowed: {type: Number, required: true},
+    carryOnWeightLimitKg: {type: Number, required: true},
+    personalItemAllowed: { type: Boolean, default: false},
+    checkedBagsAllowed: {type: Number, required: true},
+    checkedBagWeightLimitKg: {type: Number, required: true},
+    extraBagFeeUSD: {type: Number, required: true},
+    aircraftModel: {type: String, required: true},
+    aircraftCode: {type: String, required: true},
+    aircraftAgeYears: {type: Number, required: true},
+    aircraftCapacity: {type: Number, required: true},
+    seatLayout: {type: String, required: true},
+    seatPitch: {type: String, required: true},
+    seatWidth: {type: String, required: true},
+    hasUSBOutlets: { type: Boolean, default: false},
+    hasPowerOutlets: { type: Boolean, default: false},
+    hasLiveTV: { type: Boolean, default: false},
 
-  amenities: { type: amenitiesSchema },
+},
+{ timestamps: true });
+const Flight = mongoose.model("Flight", FlightSchema);
 
-  price: { type: Number, required: true },
-  stops: { type: Number, default: 0 },
-  stopInfo: [stopInfoSchema],
-
-  status: { type: String, enum: ["scheduled", "cancelled", "completed"], default: "scheduled" },
-  date: { type: Date, required: true }
-}, { timestamps: true });
-
-export default mongoose.model("Flight", flightsSchema);
-
+export default Flight;
