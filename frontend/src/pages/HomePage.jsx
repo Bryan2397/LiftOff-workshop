@@ -1,72 +1,299 @@
-import { useState } from "react";
+import { useState, useEffect} from "react";
 import "./UserInfoPage.css";
 import FlightCard from "../components/FlightCard";
 import { ArrowLeftRight } from "lucide-react"; 
+import toast from "react-hot-toast";
+import axios from "axios";
+import { Link, useNavigate } from "react-router-dom";
+
 
 const HomePage = () => {
     const [flights, setFlights] = useState([]);
-    const [searchOrigin, setSearchOrigin] = useState('');
-    const [searchDestination, setSearchDestination] = useState('');
+    const [originSearch, setOriginSearch] = useState('');
+    const [destinationSearch, setDestinationSearch] = useState('');
+    const [results, setResults] = useState([]);
+
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const [date, setDate] = useState("");
+  const [passengers, setPassengers] = useState(1);
+  const [airline, setAirline] = useState("All");
+  const [nonstopOnly, setNonstopOnly] = useState(false);
+  const [sortBy, setSortBy] = useState("priceAsc");
+  const navigate = useNavigate;
+
 
     const swap = (e) => {
         e.preventDefault();
-        
-        let temp = searchOrigin;
-        setSearchOrigin(searchDestination);
-        setSearchDestination(temp);
+        toast.success("Swapped");
+        let temp = originSearch;
+        setOriginSearch(destinationSearch);
+        setDestinationSearch(temp);
     }
 
-  return (
-    <div className="user-page">
-      {/* Header */}
-      <div className="user-header">
-        <h1>Welcome to LiftOff</h1>
-        <p>Find your next flight with ease.</p>
-      </div>
+    const getFlights = async (e) => {
+        e.preventDefault();
+        try {
+            if(!originSearch || !destinationSearch){
+              return toast.error("Please provide Origin and Destination location");
+            }
+            
+            const flightsFound = await axios.get("http://localhost:5000/api/flights/search", { 
+              params: {
+                originSearch, 
+                destinationSearch 
+              }
+            });
+          setFlights(flightsFound.data);
+          console.log(flights);
 
-      {/* Search Section */}
-      <div className="user-content">
-        <h2 className="section-title">Search Flights</h2>
-        <form className="support-form" >
-          <input
-            type="text"
-            name="searchOrigin"
-            value={searchOrigin}
-            placeholder="Enter Origin (e.g. JFK)"
-            onChange={(e) => setSearchOrigin(e.target.value)}
-          />
-          <button style={{width: "50px"}} onClick={swap} >
-            <ArrowLeftRight/>
-          </button>
-          
-          <input
-            type="text"
-            name="searchDestination"
-            value={searchDestination}
-            placeholder="Enter Destination (e.g. LAX)"
-            onChange={(e) => setSearchDestination(e.target.value)}
-          />
-          
-          <button type="submit">Search</button>
-
-        </form>
-
-        {/* Create Flight card component*/}
-        {flights.map((flight) => {
-            <FlightCard key={flight._id} flight={flight} />
-        })
+          // FIX LATER:
+      // if(flights.length==0){
+      //   toast.error("We don't have any flights for that specific route");
+      // }else{
+      //   toast.success("These are the flights we have");
+      // }
+        } catch (error) {
+           return toast.error("No flights found");
         }
-        <h1>HEY</h1>
-      </div>
+    }
 
-      
+    useEffect(() => {
+    console.log(flights);
+    // setResults(true);
+    
+    }, [flights]);
 
-      {/* Footer */}
-      <div className="user-content" style={{ textAlign: "center", marginTop: "2rem" }}>
-        <p style={{ color: "#6b7280" }}>© 2025 LiftOff. All rights reserved.</p>
-      </div>
+  return (
+    <div style={styles.page}>
+      {/* ======= Header ======= */}
+      <header style={styles.header}>
+        <div style={{ ...styles.container, ...styles.headerFlex }}>
+          <div style={styles.brand}>LiftOff</div>
+
+          <nav style={styles.nav}>
+            <Link style={styles.link} to="/check-in">Check-in</Link>
+            <Link style={styles.link} to="/support">Customer-Support</Link> 
+            <Link style={styles.link} to="/UserDashboard"> Your Profile</Link>
+          </nav>
+
+          <div style={styles.authButtons}>
+            <Link to="/Login" className="nav-login-btn">Login</Link>
+            <Link to="/SignUpPage" className="nav-signup-btn">Sign Up</Link>
+          </div>
+        </div>
+      </header>
+
+      {/* ======= Hero + Search ======= */}
+      <main style={styles.hero}>
+        <div style={{ ...styles.container, ...styles.heroInner }}>
+
+          {/* Search card */}
+          <form
+            style={styles.card}
+            onSubmit={(e) => {
+              e.preventDefault();
+            }}
+          >
+            <div style={styles.row}>
+              <label style={styles.label}>
+                From
+                <input
+                  style={styles.input}
+                  placeholder="e.g., JFK, EWR, ALB…"
+                  value={from}
+                  onChange={(e) => setFrom(e.target.value)}
+                />
+              </label>
+
+              <label style={styles.label}>
+                To
+                <input
+                  style={styles.input}
+                  placeholder="e.g., LHR, SFO, MIA…"
+                  value={to}
+                  onChange={(e) => setTo(e.target.value)}
+                />
+              </label>
+            </div>
+
+            <div style={styles.row}>
+              <label style={styles.label}>
+                Depart
+                <input
+                  type="date"
+                  style={styles.input}
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                />
+              </label>
+
+              <label style={styles.label}>
+                Passengers
+                <input
+                  type="number"
+                  min="1"
+                  style={styles.input}
+                  value={passengers}
+                  onChange={(e) => setPassengers(parseInt(e.target.value || "1", 10))}
+                />
+              </label>
+            </div>
+
+            <div style={styles.row}>
+              <label style={styles.label}>
+                Airline
+                <select
+                  style={styles.input}
+                  value={airline}
+                  onChange={(e) => setAirline(e.target.value)}
+                >
+                  <p>OKAY</p>
+                </select>
+              </label>
+
+              <label style={styles.label}>
+                Sort by
+                <select
+                  style={styles.input}
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                >
+                  <option value="priceAsc">Price (low → high)</option>
+                  <option value="priceDesc">Price (high → low)</option>
+                  <option value="durationAsc">Duration (shortest)</option>
+                  <option value="departAsc">Departure time (earliest)</option>
+                  <option value="ratingDesc">Rating (best)</option>
+                </select>
+              </label>
+            </div>
+
+
+            <button style={styles.button} type="submit">Clear Search</button>
+          </form>
+
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div style={{ color: "#666", }}>{results.length} flights found</div>
+          </div>
+
+          <div style={{ display: "grid", gap: 12 }}>
+            {results.map(f => (
+              <article key={f.id} style={styles.resultCard}>
+                <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 1fr 1fr auto", alignItems: "center", gap: 12 }}>
+                  <div>
+                    <div style={{ fontWeight: 700 }}>{f.airline} <span style={styles.badge}>{f.flightNo}</span></div>
+                    <div style={{ fontSize: 12, color: "#666" }}>{airportName(f.from)} → {airportName(f.to)}</div>
+                  </div>
+                  <div>
+                    <div style={styles.time}>{f.depart}</div>
+                    <div style={{ fontSize: 12, color: "#666" }}>{cityFromCode(f.from)}</div>
+                  </div>
+                  <div style={{ textAlign: "center" }}>
+                    <div style={{ fontSize: 12, color: "#666" }}>{formatDuration(f.durationMin)}</div>
+                    <div style={{ fontSize: 12 }}>{f.stops === 0 ? "Nonstop" : `${f.stops} stop`}</div>
+                  </div>
+                  <div style={{ textAlign: "right" }}>
+                    <div style={styles.time}>{f.arrive}</div>
+                    <div style={{ fontSize: 12, color: "#666" }}>{cityFromCode(f.to)}</div>
+                  </div>
+                  <div style={{ textAlign: "right" }}>
+                    <div style={styles.price}>${f.price.toFixed(2)}</div>
+                    <div style={{ fontSize: 12, color: "#666" }}>★ {f.rating.toFixed(1)}</div>
+                  </div>
+                </div>
+
+                <div style={{ marginTop: 8, display: "flex", gap: 12, alignItems: "center" }}>
+                  {f.amenities.wifi && <span style={styles.amenity}>WiFi</span>}
+                  {f.amenities.meals && <span style={styles.amenity}>Meals</span>}
+                  {f.amenities.entertainment && <span style={styles.amenity}>Entertainment</span>}
+                  <button 
+                    style={styles.selectBtn}
+                    onClick={() => navigate(`/flight/${f.id}`, { state: { flight: f } })}
+                  >
+                    Select Flight
+                  </button>
+
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </main>
+
+      <footer style={styles.footer}>
+        <div style={styles.container}>
+          <small>Customer Support: +1 (518) 555-0123</small>
+        </div>
+      </footer>
     </div>
   );
 }
+
+// ---- Helper functions ----
+function toMinutes(hhmm) {
+  const [h, m] = hhmm.split(":").map(Number);
+  return h * 60 + m;
+}
+function formatDuration(min) {
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  return `${h}h ${m}m`;
+}
+function cityFromCode(code) {
+  const map = { JFK: "New York (JFK)", LGA: "New York (LGA)", EWR: "Newark (EWR)", LHR: "London (LHR)", SFO: "San Francisco (SFO)", MIA: "Miami (MIA)", LAX: "Los Angeles (LAX)", ALB: "Albany (ALB)", DFW: "Dallas (DFW)", DEN: "Denver (DEN)", CDG: "Paris (CDG)", MCO: "Orlando (MCO)" };
+  return map[code] || code;
+}
+function airportName(code) { return code; }
+
+// ---- Styles ----
+const styles = {
+  page: { fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, sans-serif", color: "#111" },
+  container: { maxWidth: 1000, margin: "0 auto", padding: "0 18px" },
+  header: {
+  background: "#faf9f9ff",
+  border: "1px solid #e9eef5",
+  borderRadius: "20px",          // 💡 curves all corners (top + bottom)
+  boxShadow: "0 2px 8px rgba(0, 0, 0, 0.05)",  // adds soft depth
+  margin: "12px auto",           // centers and adds breathing room
+  width: "95%",                  // optional: gives space from window edges
+  padding: "4px 0",              // keeps internal layout nice
+  },    
+  headerFlex: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 10px" },
+  brand: { fontWeight: 800, fontSize: 28, padding: "16px 0" },
+  nav: { display: "flex", gap: 18 },
+  link: { textDecoration: "none", color: "#333", padding: "14px 0" },
+  authButtons: { display: "flex", gap: "10px", alignItems: "center" },
+  loginBtn: { border: "1px solid #2f6feb", color: "#2f6feb", background: "white", padding: "8px 16px", borderRadius: "8px", textDecoration: "none", fontWeight: 600 },
+  signupBtn: { border: "1px solid #2f6feb", background: "#2f6feb", color: "white", padding: "8px 16px", borderRadius: "8px", textDecoration: "none", fontWeight: 600 },
+
+  //color of background
+  hero: {
+  background: "#f6f7fbce",
+  padding: "28px 0 40px",
+  borderRadius: "20px",                     // 💡 curved edges all around
+  width: "95%",                             // match header width
+  margin: "20px auto",                      // center it with spacing
+  boxShadow: "0 2px 8px rgba(0, 0, 0, 0.05)" // subtle depth shadow
+    },
+  heroInner: { display: "grid", gap: 16 },
+  title: { margin: 0, fontSize: 24 },
+
+  //color of filtering section
+  card: { background: "#ffffffff", border: "1px solid #e6e6e6", borderRadius: 12, padding: 16, display: "grid", gap: 12, boxShadow: "0 1px 2px rgba(0,0,0,.04)" },
+  row: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 },
+  label: { display: "grid", gap: 6, fontSize: 12, color: "#444" },
+  input: { height: 38, padding: "0 10px", borderRadius: 8, border: "1px solid #cfd7df", fontSize: 14, background: "#fff" },
+  button: { height: 40, border: "1px solid #2f6feb", background: "#2f6feb", color: "white", borderRadius: 8, fontWeight: 600, cursor: "pointer" },
+
+  //color of the flight data card
+  resultCard: { background: "#ffffffff", border: "1px solid #e7ebf0", borderRadius: 12, padding: 16, boxShadow: "0 1px 2px rgba(0,0,0,.04)" },
+  time: { fontSize: 16, fontWeight: 700 },
+  price: { fontSize: 18, fontWeight: 800 },
+  badge: { fontSize: 12, background: "#eef3ff", color: "#2f6feb", padding: "2px 6px", borderRadius: 6, marginLeft: 6 },
+  amenity: { fontSize: 12, color: "#4b5563", background: "#f3f4f6", padding: "4px 8px", borderRadius: 6 },
+  selectBtn: { marginLeft: "auto", border: "1px solid #2f6feb", background: "#2f6feb", color: "#fff", borderRadius: 8, height: 34, padding: "0 12px", cursor: "pointer" },
+  footer: { borderTop: "1px solid #eee", padding: "16px 0", color: "#666", background: "#fff" },
+};
+    
 
 export default HomePage;
