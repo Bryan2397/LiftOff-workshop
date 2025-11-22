@@ -4,15 +4,20 @@ const FlightCard = ({ f }) => {
   const navigate = useNavigate();
   console.log(f);
 
-  function formatDuration(min) {
-  const h = Math.floor(min / 60);
-  const m = min % 60;
-  console.log(h, m);
-  return `${h}h ${m}m`;
+  function formatDuration(depart, arrive) {
+    const d1 = new Date(depart);
+    const d2 = new Date(arrive);
+
+    let diffMs = d2 - d1;
+    const h = Math.floor(diffMs / (1000 * 60 * 60));
+    diffMs -= h * 1000 * 60 * 60;
+
+    const m = Math.floor(diffMs / (1000 * 60));
+    return `${h}h ${m}m`;
   }
+
   function timeToText(time){
-    return new Date(time).toLocaleDateString("en-US",{
-            
+    return new Date(time).toLocaleDateString("en-US", {
             hour: "numeric",
             minute: "2-digit",
             hour12: true
@@ -24,18 +29,18 @@ const FlightCard = ({ f }) => {
                 <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 1fr 1fr auto", alignItems: "center", gap: 12 }}>
                   <div>
                     <div style={{ fontWeight: 700 }}>{f.airline} <span style={styles.badge}>{f.flightNo}</span></div>
-                    <div style={{ fontSize: 12, color: "#666" }}>{f.fromCode} → {f.addressTo}</div>
+                    <div style={{ fontSize: 12, color: "#666" }}>{f.fromCode} → {f.toCode}</div>
                   </div>
                   <div>
                     <div style={styles.time}>{timeToText(f.departureTime)}</div>
                     <div style={{ fontSize: 12, color: "#666" }}>{f.from}</div>
                   </div>
                   <div style={{ textAlign: "center" }}>
-                    <div style={{ fontSize: 12, color: "#666" }}>{formatDuration(f.durationMin)}</div>
+                    <div style={{ fontSize: 12, color: "#666" }}>{formatDuration(f.departureTime, f.arrivalTime)}</div>
                     <div style={{ fontSize: 12 }}>{f.stops === 0 ? "Nonstop" : `${f.stops} stop`}</div>
                   </div>
                   <div style={{ textAlign: "right" }}>
-                    <div style={styles.time}>{f.arrive}</div>
+                    <div style={styles.time}>{timeToText(f.arrivalTime)}</div>
                     <div style={{ fontSize: 12, color: "#666" }}>{f.to}</div>
                   </div>
                   <div style={{ textAlign: "right" }}>
@@ -48,7 +53,7 @@ const FlightCard = ({ f }) => {
                   {f.amenities.wifi && <span style={styles.amenity}>WiFi</span>}
                   {f.amenities.meals && <span style={styles.amenity}>Meals</span>}
                   {f.amenities.entertainment && <span style={styles.amenity}>Entertainment</span>}
-                  <button 
+                  <button disabled={f.seatsAvailable == 0}
                     style={styles.selectBtn}
                     onClick={() => navigate(`/flight/${f._id}`)}
                   >
@@ -59,6 +64,7 @@ const FlightCard = ({ f }) => {
               </article>
   );
 }
+
 const styles = {
   page: { fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, sans-serif", color: "#111" },
   container: { maxWidth: 1000, margin: "0 auto", padding: "0 18px" },
