@@ -2,64 +2,98 @@ import { useState, useEffect } from "react";
 // import "./UserInfoPage.css"; 
 import "../signup.css"
 import axios from "axios"; 
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-hot-toast";
 
 const AddFlight = () => {
   // sellerId: {type: mongoose.Schema.Types.ObjectId, ref: "Seller", required: true},
       
-      // flightNumber: {type: String, required: true},
-      // airline: { type: String, required: true },
-      // seatsBooked: {type: Number, required: true},
-      // description: {type: String, required: true},
-      // origin: {type: String, required: true},
-      // destination: {type: String, required: true},
-      // status: { type: String, enum: ['scheduled', 'cancelled', 'completed'], default: 'scheduled' },
-      // departureTime: {type: Date, required: true},
-      // arrivalTime: {type: Date, required: true},
-      // price: {type: Number, required: true},
-      // seatsAvailable: {type: Number, required: true},
-  
+  const { id } = useParams();
+  console.log(id);
+
+  const [stops, setStops] = useState([]);    
+  const addStop = () => {
+    setStops(prev => [
+      ...prev,
+      {address: '', fullName: '', durationMin: '', code: ''}
+    ]);
+  };
+  useEffect(() => {
+    console.log(stops);
+  },[stops]);
+
+  const updateStop = (index, field, value) => {
+    setStops(prev => {
+      const newStops = [...prev];
+      newStops[index][field] = value;
+      return newStops;
+    })
+  };
+
+
   // State to hold form input data
+  // convert number fields from strings to number when we submit
   const [flightData, setFlightData] = useState({
-    sellerId: '',
+    sellerId: id,
     flightNumber: '',
     airline: '',
-    seatsBooked: 0,
+    seatsBooked: "", // convert to num
     description: '',
-    origin: {
-      city: '',
-      airportName: '',
-      country:'',
-      iataCode: ''
+    stopInfo: [],
+    amenities: {
+      wifi: false,
+      meals: false,
+      entertainment: false,
+      charging: false,
     },
-    destination: {
-      city: '',
-      airportName: '',
-      country: '',
-      iataCode: ''
-    },
+
     status: 'scheduled',
     departureTime: '',
     arrivalTime: '',
-    price: 0,
-    seatsAvailable: 0
+    price: '', // convert to num 
+    seatsAvailable: "",// convert to num
+
+    from: '',
+    airportFrom: '',
+    addressFrom: '',
+    terminalFrom: '',
+    gateFrom: '',
+    fromCode: '',
+
+    to: '',
+    airportTo: '',
+    addressTo: '',
+    terminalTo: '',
+    gateTo: '',
+    toCode: '',
+
+    rating: '',
+    stops: '', // convert to num
+
+    carryOnBagsAllowed: '', // convert to num
+    carryOnWeightLimitKg: '', // convert to num 
+    personalItemAllowed: false,
+    baggageClaim: '',
+    checkedBagsAllowed: '', // convert to num
+    checkedBagWeightLimitKg: '', // convert to num
+    extraBagFeeUSD: '', // convert to num
+
+    aircraftModel: '',
+    aircraftCode: '',
+    aircraftAgeYears: '', // convert to num
+
+    seatLayout: '',
+    seatPitch: '',
+    seatWidth: '',
+
+    hasUSBOutlets: false,
+    hasPowerOutlets: false,
+    hasLiveTV: false,
   });
   
+  console.log(flightData);
+
   const navigate = useNavigate();
-
-    
-
-    const HandleOriginChange = (e) => {
-      const {name, value} = e.target;
-      setFlightData((prev) => ({
-        ...prev,
-        origin: {
-          ...prev.origin,
-          [name]: value
-        }
-      }));
-    }
 
 
     const handleDestinationChange = (e) => {
@@ -71,12 +105,24 @@ const AddFlight = () => {
         [name]: value
         }}));
         console.log(flightData);
-    }
+      }
+
     // Function to update formData when input changes
     const handleChange = (e) => { 
       
       // Spread the old values, update only the one that changed
     setFlightData({ ...flightData, [e.target.name]: e.target.value });
+  };
+
+
+  const deleteStop = (e) => {
+    const {id} = e.target; 
+    console.log(id);
+    setStops((prev) => {
+      return prev.filter((stop, index) => {
+        return index != id;
+      })
+    });
   };
 
 
@@ -86,11 +132,9 @@ const AddFlight = () => {
 
     try{
       // Make POST request to backend API to register user
-        if(flightData.seatsAvailable <= 0 ){
-            toast.error("All fields must be valid");
-        }
+        
 
-        await axios.post('http://localhost:5000/api/flights/register', flightData);
+        await axios.post('http://localhost:5000/api/flights/', flightData);
         
         alert("Form submitted!"); 
         toast.success("Flight successfully created"); 
@@ -103,7 +147,8 @@ const AddFlight = () => {
   };
 
     useEffect(() => {
-    console.log(flightData);
+    console.log(id);
+
     }, [flightData]);
 
     
@@ -120,7 +165,7 @@ const AddFlight = () => {
                     <input 
                     type="text"
                     name="flightNumber"
-                    placeholder="Enter Airline Initials"
+                    placeholder="Enter Airline Initials with Number"
                     value={flightData.flightNumber}
                     onChange={handleChange}
                     required
@@ -140,127 +185,13 @@ const AddFlight = () => {
 
                 <div className="form-group">
                     <input 
-                    type="number"
-                    name="seatsAvailable"
-                    placeholder="Number of Seats"
-                    value={flightData.seatsAvailable}
+                    type="text"
+                    name="price"
+                    placeholder="Price"
+                    value={flightData.price}
                     onChange={handleChange}
                     required
-                    style={{height: '30px'}}
-                    />
-                </div>
-
-                <h3>Origin Details</h3>
-                <div className="form-group">
-                    <input 
-                    type="text"
-                    name="city"
-                    placeholder="Origin city"
-                    value={flightData.origin.city}
-                    onChange={HandleOriginChange}
-                    required
-                    />
-                </div>
-
-                <div className="form-group">
-                    <input 
-                    type="text"
-                    name="airportName"
-                    placeholder="Airport Name"
-                    value={flightData.origin.airportName}
-                    onChange={HandleOriginChange}
-                    required
-                    />
-                </div>
-
-                <div className="form-group">
-                    <input 
-                    type="text"
-                    name="country"
-                    placeholder="Country"
-                    value={flightData.origin.country}
-                    onChange={HandleOriginChange}
-                    required
-                    />
-                </div>
-
-                <div className="form-group">
-                    <input 
-                    type="text"
-                    name="iataCode"
-                    placeholder="iataCode"
-                    value={flightData.origin.iataCode}
-                    onChange={HandleOriginChange}
-                    required
-                    />
-                </div>
-
-                <h3>Destination Details</h3>
-                <div className="form-group">
-                    <input 
-                    type="text"
-                    name="city"
-                    placeholder="Origin city"
-                    value={flightData.destination.city}
-                    onChange={handleDestinationChange}
-                    required
-                    />
-                </div>
-
-                <div className="form-group">
-                    <input 
-                    type="text"
-                    name="airportName"
-                    placeholder="Airport Name"
-                    value={flightData.destination.airportName}
-                    onChange={handleDestinationChange}
-                    required
-                    />
-                </div>
-
-                <div className="form-group">
-                    <input 
-                    type="text"
-                    name="country"
-                    placeholder="Country"
-                    value={flightData.destination.country}
-                    onChange={handleDestinationChange}
-                    required
-                    />
-                </div>
-
-                <div className="form-group">
-                    <input 
-                    type="text"
-                    name="iataCode"
-                    placeholder="iataCode"
-                    value={flightData.destination.iataCode}
-                    onChange={handleDestinationChange}
-                    required
-                    />
-                </div>
-                
-                <div className="form-group">
-                  <h4>Pick an Arrival Time</h4>
-                    <input 
-                    type="datetime-local"
-                    name="arrivalTime"
-                    placeholder="Arrival Time"
-                    value={flightData.arrivalTime}
-                    onChange={handleChange}
-                    required
-                    />
-                </div>
-                
-                <div className="form-group">
-                  <h4>Pick a Departure Time</h4>
-                    <input 
-                    type="datetime-local"
-                    name="departureTime"
-                    placeholder="Departure Time"
-                    value={flightData.departureTime}
-                    onChange={handleChange}
-                    required
+                    style={{ height: '30px' }}
                     />
                 </div>
 
@@ -277,17 +208,376 @@ const AddFlight = () => {
 
                 <div className="form-group">
                     <input 
-                    type="number"
-                    name="price"
-                    placeholder="Price"
-                    value={flightData.price}
+                    type="text"
+                    name="seatsAvailable"
+                    placeholder="Number of Seats"
+                    value={flightData.seatsAvailable}
                     onChange={handleChange}
                     required
-                    style={{ height: '30px' }}
+                    style={{height: '30px'}}
                     />
                 </div>
 
-                <p></p>
+                <div className="form-group">
+                  <h3>Pick an Arrival Time</h3>
+                    <input 
+                    type="datetime-local"
+                    name="arrivalTime"
+                    placeholder="Arrival Time"
+                    value={flightData.arrivalTime}
+                    onChange={handleChange}
+                    required
+                    />
+                </div>
+
+                <div className="form-group">
+                  <h3>Pick a Departure Time</h3>
+                    <input 
+                    type="datetime-local"
+                    name="departureTime"
+                    placeholder="Departure Time"
+                    value={flightData.departureTime}
+                    onChange={handleChange}
+                    required
+                    />
+                </div>
+
+                <h3>From Details</h3>
+                <div className="form-group">
+                    <input 
+                    type="text"
+                    name="from"
+                    placeholder="From City"
+                    value={flightData.from}
+                    onChange={handleChange}
+                    required
+                    />
+                </div>
+
+                <div className="form-group">
+                    <input 
+                    type="text"
+                    name="addressFrom"
+                    placeholder="From Address"
+                    value={flightData.addressFrom}
+                    onChange={handleChange}
+                    required
+                    />
+                </div>
+
+                <div className="form-group">
+                    <input 
+                    type="text"
+                    name="fromCode"
+                    placeholder="From iata Code"
+                    value={flightData.fromCode}
+                    onChange={handleChange}
+                    required
+                    />
+                </div>
+
+                <div className="form-group">
+                    <input 
+                    type="text"
+                    name="airportFrom"
+                    placeholder="From Airport"
+                    value={flightData.airportFrom}
+                    onChange={handleChange}
+                    required
+                    />
+                </div>
+
+                <div className="form-group">
+                    <input 
+                    type="text"
+                    name="gateFrom"
+                    placeholder="Gate From"
+                    value={flightData.gateFrom}
+                    onChange={handleChange}
+                    required
+                    />
+                </div>
+
+                <div className="form-group">
+                    <input 
+                    type="text"
+                    name="terminalFrom"
+                    placeholder="Terminal From"
+                    value={flightData.terminalFrom}
+                    onChange={handleChange}
+                    required
+                    />
+                </div>
+
+                <h3>To Details</h3>
+                <div className="form-group">
+                    <input 
+                    type="text"
+                    name="to"
+                    placeholder="To City"
+                    value={flightData.to}
+                    onChange={handleChange}
+                    required
+                    />
+                </div>
+
+                <div className="form-group">
+                    <input 
+                    type="text"
+                    name="addressTo"
+                    placeholder="To Address"
+                    value={flightData.addressTo}
+                    onChange={handleChange}
+                    required
+                    />
+                </div>
+
+                <div className="form-group">
+                    <input 
+                    type="text"
+                    name="toCode"
+                    placeholder="To iata Code"
+                    value={flightData.toCode}
+                    onChange={handleChange}
+                    required
+                    />
+                </div>
+
+                <div className="form-group">
+                    <input 
+                    type="text"
+                    name="airportTo"
+                    placeholder="From Airport"
+                    value={flightData.airportTo}
+                    onChange={handleChange}
+                    required
+                    />
+                </div>
+
+                <div className="form-group">
+                    <input 
+                    type="text"
+                    name="gateTo"
+                    placeholder="Gate To"
+                    value={flightData.gateFrom}
+                    onChange={handleChange}
+                    required
+                    />
+                </div>
+
+                <div className="form-group">
+                    <input 
+                    type="text"
+                    name="terminalTo"
+                    placeholder="Terminal To"
+                    value={flightData.terminalTo}
+                    onChange={handleChange}
+                    required
+                    />
+                </div>
+
+                <h3>Baggage Information</h3>
+                <h4>Carry On</h4>
+                <div className="form-group">
+                    <input 
+                    type="text"
+                    name="carryOnBagsAllowed"
+                    placeholder="Number of Carry on Bags allowed"
+                    value={flightData.carryOnBagsAllowed}
+                    onChange={handleChange}
+                    required
+                    />
+                </div>
+
+                <div className="form-group">
+                    <input 
+                    type="text"
+                    name="carryOnWeightLimitKg"
+                    placeholder="carry On Weight Limit Kg"
+                    value={flightData.carryOnWeightLimitKg}
+                    onChange={handleChange}
+                    required
+                    />
+                </div>
+
+                <div className="form-group">
+                  <h4>Personal Items Allowed</h4>
+                    <input 
+                    type="checkbox"
+                    name="personalItemAllowed"
+                    placeholder="personal Item Allowed"
+                    value={flightData.personalItemAllowed}
+                    onChange={(e) => setFlightData(prev => ({ ...prev, personalItemAllowed: e.target.checked}))}
+                    
+                    />
+                </div>
+
+                <h4>Checked Bags</h4>
+                <div className="form-group">
+                    <input 
+                    type="text"
+                    name="checkedBagWeightLimitKg"
+                    placeholder="checked Bag Weight Limit Kg"
+                    value={flightData.checkedBagWeightLimitKg}
+                    onChange={handleChange}
+                    required
+                    />
+                </div>
+                
+                <div className="form-group">
+                    <input 
+                    type="text"
+                    name="checkedBagsAllowed"
+                    placeholder="checked Bags Allowed"
+                    value={flightData.checkedBagsAllowed}
+                    onChange={handleChange}
+                    required
+                    />
+                </div>
+
+                <div className="form-group">
+                    <input 
+                    type="text"
+                    name="extraBagFeeUSD"
+                    placeholder="Extra Bag Fee"
+                    value={flightData.extraBagFeeUSD}
+                    onChange={handleChange}
+                    required
+                    />
+                </div>
+
+                <div className="form-group">
+                    <input 
+                    type="text"
+                    name="baggageClaim"
+                    placeholder="Carousel # to get luggage"
+                    value={flightData.baggageClaim}
+                    onChange={handleChange}
+                    required
+                    />
+                </div>
+
+                <h3>Aircraft Information</h3>
+                <div className="form-group">
+                    <input 
+                    type="text"
+                    name="aircraftModel"
+                    placeholder="aircraft Model"
+                    value={flightData.aircraftModel}
+                    onChange={handleChange}
+                    required
+                    />
+                </div>
+
+                <div className="form-group">
+                    <input 
+                    type="text"
+                    name="aircraftAgeYears"
+                    placeholder="# of years aircraft has been in use"
+                    value={flightData.aircraftAgeYears}
+                    onChange={handleChange}
+                    required
+                    />
+                </div>
+
+                <div className="form-group">
+                    <input 
+                    type="text"
+                    name="aircraftCode"
+                    placeholder="Code which represents your aircraft"
+                    value={flightData.aircraftCode}
+                    onChange={handleChange}
+                    required
+                    />
+                </div>
+
+                <div className="form-group">
+                    <input 
+                    type="text"
+                    name="seatLayout"
+                    placeholder="3-3, 3-4-3"
+                    value={flightData.seatLayout}
+                    onChange={handleChange}
+                    required
+                    />
+                </div>
+
+                <div className="form-group">
+                    <input 
+                    type="text"
+                    name="seatPitch"
+                    placeholder="seat Pitch inches"
+                    value={flightData.seatPitch}
+                    onChange={handleChange}
+                    required
+                    />
+                </div>
+
+                <div className="form-group">
+                    <input 
+                    type="text"
+                    name="seatWidth"
+                    placeholder="Width of seats"
+                    value={flightData.seatWidth}
+                    onChange={handleChange}
+                    required
+                    />
+                </div>
+
+                <div className="form-group">
+                    <input 
+                    type="text"
+                    name="rating"
+                    placeholder="Rating"
+                    value={flightData.rating}
+                    onChange={handleChange}
+                    required
+                    />
+                </div>
+
+                <h3>Stops</h3>
+                <button type="button" onClick={addStop} >Add Stop</button>
+
+                {stops.map((stop, index) => (
+            <div key={index} className="form-group">
+              <h3>{`Stop #${index+1}`}</h3>
+            <input 
+            type="text"
+            name="fullName"
+            placeholder="Address Stop Airport"
+            value={stop.fullName}
+            onChange={e => updateStop(index, "fullName", e.target.value)}
+            required
+            />
+
+              <input 
+              type="text"
+              name="address"
+              placeholder="Stop full address, location, city, state"
+              value={stop.address}
+              onChange={e => updateStop(index, "address", e.target.value)}
+              required
+              />
+        
+            <input 
+            type="text"
+            name="code"
+            placeholder="Address Stop iata Code"
+            value={stop.code}
+            onChange={e => updateStop(index, "code", e.target.value)}
+            required
+            />
+
+            <input 
+            type="text"
+            name="durationMin"
+            placeholder="total flight stop minutes"
+            value={stop.durationMin}
+            onChange={e => updateStop(index, "durationMin", e.target.value)}
+            required
+            />
+            <button id={index} onClick={deleteStop} type="button" style={{height: "30px", marginTop: "20px"}}>Delete stop</button>
+            </div>))}
 
                 <button type="submit" className="submit-button">Create Flight</button>
             </form>
